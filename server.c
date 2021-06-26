@@ -43,7 +43,6 @@ void sts_final_loop_udp(int sock, const struct sockaddr_in addr) {
 	int addrsz = sizeof(addr);
 
 	while(1) {
-		bzero(ob, obsz);
 		recvfrom(sock, &ib, 1, 0 /* flags */, ( struct sockaddr *) &addr, &addrsz); 
 		t = nanotime();
 		if (ib == 'r') sendto(sock, &t, tsz, 0, (const struct sockaddr *) &addr, addrsz); 
