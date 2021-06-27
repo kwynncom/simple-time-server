@@ -15,12 +15,16 @@ void sts_final_loop_tcp(int cfd) {
 	unsigned char ib;
 	unsigned long t;
 	const int tsz = sizeof(t);
-	int wr, rr;
+	int wr;
+	const int rcsz = 1;
 
 	if (tsz != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8125); }
 
 	while (1) {
-		rr = read(cfd, &ib, 1);
+		if (read(cfd, &ib, rcsz) != rcsz) {
+			perror("read error.  Exiting...");
+			exit(8128);
+		}
 		t = nanotime();
 		if (ib == 'r') wr = write(cfd, &t, tsz); 
 		else {
@@ -38,11 +42,15 @@ void sts_final_loop_udp(int sock, const struct sockaddr_in6 addr) {
 	unsigned long t;
 	const int tsz = sizeof(t);
 	int addrsz = sizeof(addr);
+	const int rcsz = 1;
 
 	if (tsz != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8126); }
 
 	while(1) {
-		recvfrom(sock, &ib, 1, 0 /* flags */, ( struct sockaddr *) &addr, &addrsz); 
+		if (recvfrom(sock, &ib, rcsz, 0 /* flags */, ( struct sockaddr *) &addr, &addrsz) != rcsz) {
+			printf("recvfrom error.  Exiting...");
+			exit(8128);
+		}
 		t = nanotime();
 		if (ib == 'r') sendto(sock, &t, tsz, 0, (const struct sockaddr *) &addr, addrsz); 
 		else {
