@@ -1,0 +1,11 @@
+[Unit]
+Description=simple timeserver
+After=network.target
+
+[Service]
+User=nobody
+Group=nogroup
+ExecStart=/usr/bin/simptime
+
+[Install]
+WantedBy=default.target

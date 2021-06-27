@@ -1,11 +1,9 @@
-#include <stdio.h> // perror
-#include <sys/types.h> // fork
+#include <stdio.h>
 #include <unistd.h>    // fork
 #include <sys/socket.h> 
 #include <arpa/inet.h> 
 #include <stdlib.h> // exit
 #include <string.h> // strcmp
-#include <strings.h> // bzero
 
 #include "config.h"
 #include "common.h"
@@ -15,9 +13,11 @@ void checkUID() {
 	const int fsc = 3;
 	__uid_t (*fs[/* 3 - cannot init me */])() = {&getuid, &geteuid, &getgid};
 
-	for(int i=0; i < fsc; i++) if (fs[i]() != NOBODY_NOGROUP_ID) { printf("I am somebody but I should not be somebody.\n"); exit(8126); };
-
-// getuid(), geteuid(), getgid()
+	for(int i=0; i < fsc; i++) 
+		if (fs[i]() != NOBODY_NOGROUP_ID) { 
+			printf("I am somebody but I should not be somebody.\n"); 
+			exit(8126); 
+		}
 }
 
 void sts_final_loop_tcp(int cfd) {
@@ -32,13 +32,12 @@ void sts_final_loop_tcp(int cfd) {
 	if (tsz != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8125); }
 
 	while (1) {
-		bzero(ob, obsz);
 		rr = read(cfd, &ib, 1);
 		t = nanotime();
 		if (ib == 'r') wr = write(cfd, &t, tsz); 
 		else {
 			sprintf(ob, "%ld\n", t);
-			wr = write(cfd, ob, strlen(ob));
+			wr = write(cfd, ob, obsz);
 		}
 	}
 }
@@ -65,6 +64,9 @@ void sts_final_loop_udp(int sock, const struct sockaddr_in addr) {
 }
 
 void sts_server(void) {
+
+	checkUID(); // do this before the fork
+
     int fpid  = fork();
     char *prots;
     if (fpid) prots = "tcp";
@@ -84,8 +86,6 @@ void sts_server(void) {
     int sizet = sizeof(t);
  
 	if (sizet != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8126); }
-
-	checkUID();
 
     if (isTCP) {
         while(1) {

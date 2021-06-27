@@ -1,0 +1,44 @@
+reference to previous .service:
+https://github.com/kwynncom/code-fragments/blob/master/mid/kwboot.service
+
+[Unit]
+Description=Kwynn boot service
+# After=network.target
+# After=systemd-user-sessions.service
+# After=network-online.target
+
+[Service]
+# User=spark
+# Type=simple
+# PIDFile=/run/my-service.pid
+ExecStart=/opt/kwynn/boot/bootinfo.sh start
+# ExecReload=/home/transang/startup.sh reload
+# ExecStop=/home/transang/startup.sh stop
+# TimeoutSec=30
+# Restart=on-failure
+# RestartSec=30
+# StartLimitInterval=350
+# StartLimitBurst=10
+
+[Install]
+WantedBy=local-fs.target
+
+
+Another example:
+
+# cat /etc/systemd/system/run-as-user.service
+[Unit]
+Description=Run service as user deepak
+DefaultDependencies=no
+After=network.target
+
+[Service]
+Type=simple
+User=deepak
+Group=admin
+ExecStart=/tmp/startup_script.sh
+TimeoutStartSec=0
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target
