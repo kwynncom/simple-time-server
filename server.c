@@ -34,29 +34,47 @@ void sts_final_loop_tcp(int cfd) {
 	}
 }
 
-void sts_final_loop_udp(int sock, const struct sockaddr_in6 addr) {
+void sts_final_loop(int sock, int isTCP) {
 
 	const int     obsz = KW_STS_TIME_MAX_BUF_SZ;
 	unsigned char ob[obsz];
 	unsigned char ib;
 	unsigned long t;
 	const int tsz = sizeof(t);
+
+    struct sockaddr_in6  addr;
 	int addrsz = sizeof(addr);
 	const int rcsz = 1;
+	int connfd;
+	int tempsock;
+	int rr;
 
 	if (tsz != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8126); }
 
 	while(1) {
-		if (recvfrom(sock, &ib, rcsz, 0 /* flags */, ( struct sockaddr *) &addr, &addrsz) != rcsz) {
+
+		tempsock = sock;
+
+		if (isTCP) {
+			connfd = accept(sock, (struct sockaddr  *)&addr, &addrsz);
+			if (connfd < 0) { printf("server acccept failed...\n"); exit(1);   }
+			tempsock = connfd;
+		}
+		
+		rr = recvfrom(tempsock, &ib, rcsz, 0 /* flags */, ( struct sockaddr *) &addr, &addrsz); 
+
+		if (rr != rcsz) {
 			printf("recvfrom error.  Exiting...");
 			exit(8128);
 		}
 		t = nanotime();
-		if (ib == 'r') sendto(sock, &t, tsz, 0, (const struct sockaddr *) &addr, addrsz); 
+		if (ib == 'r') sendto(tempsock, &t, tsz, 0, (const struct sockaddr *) &addr, addrsz); 
 		else {
 			sprintf(ob, "%ld\n", t);
-			sendto(sock, ob, obsz, 0, (const struct sockaddr *) &addr, addrsz); 
-		}         
+			sendto(tempsock, ob, obsz, 0, (const struct sockaddr *) &addr, addrsz); 
+		}     
+
+		if (isTCP) close(tempsock);
 	}
 
 }
@@ -75,7 +93,7 @@ void checkUID() {
 
 void sts_server(void) {
 
-	checkUID(); // do this before the fork
+// 	checkUID(); // do this before the fork
 
     int fpid  = fork();
     char *prots;
@@ -85,43 +103,9 @@ void sts_server(void) {
     int isTCP = !strcmp(prots, "tcp");
 
     int sock = getBoundSock(isTCP);
-    struct sockaddr_in6  caddr; // only UDP uses
-    int caddrsz = sizeof(caddr); // same
-    char inbuf[3];
-    int inbufsz = sizeof(inbuf);
-    int outbufssz = 30;
-    char outbufs[outbufssz];
-    int readr, connfd, writer;
-    long t;
-    int sizet = sizeof(t);
- 
-	if (sizet != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8126); }
+	sts_final_loop(sock, isTCP);
 
-    if (isTCP) {
-        while(1) {
-            if ((connfd = accept(sock, (struct sockaddr  *)&caddr, &caddrsz)) < 0) { printf("server acccept failed...\n"); exit(1);   } 
-            if (!fork()) {
-                close(sock); // child process does not need socket
-				sts_final_loop_tcp(connfd);
-                close(connfd);
-            } // if !fork
-            else close(connfd);
-        } // while outer
-    } // TCP
-    else {
-        do {
-            recvfrom(sock, &inbuf, inbufsz, 0 /* flags */, ( struct sockaddr *) &caddr, &caddrsz); 
-            t = nanotime();
-            if (inbuf[0] == 'r') sendto(sock, &t, sizet, 0, (const struct sockaddr *) &caddr, caddrsz); 
-            else {
-                sprintf(outbufs, "%ld\n", t);
-                writer = sendto(sock, outbufs, strlen(outbufs), 0, (const struct sockaddr *) &caddr, caddrsz); 
-            }         
-        } while (1);
-    }
-
-    close(sock);
-}
+} 
 
 void main(void) {
 	sts_server();
