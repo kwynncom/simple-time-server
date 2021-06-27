@@ -9,7 +9,7 @@
 #include "config.h"
     
 int getBoundSock(int isTCP, char *outaddr) {
-    struct sockaddr_in saddr;
+    struct sockaddr_in6 saddr;
     int sock, type, prot;
     int isoutaddr = strcmp("", outaddr);
 
@@ -17,10 +17,10 @@ int getBoundSock(int isTCP, char *outaddr) {
     else        { type = SOCK_STREAM; prot =  6; }
 
     bzero(&saddr, sizeof(saddr));
-    saddr.sin_family = AF_INET; 
-    if (!isoutaddr) saddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    else          saddr.sin_addr.s_addr = inet_addr(outaddr); 
-    saddr.sin_port = htons(KW_STS_PORT);
+    saddr.sin6_family = AF_INET; 
+    // if (!isoutaddr) saddr.sin6_addr.s_addr = in6addr_any; // htonl(INADDR_ANY);
+    // else          saddr.sin6_addr.s_addr = inet_addr(outaddr); 
+    saddr.sin6_port = htons(KW_STS_PORT);
 
     if ((sock = socket(AF_INET, type, prot)) < 0) { perror("socket creation failed"); exit(EXIT_FAILURE); }
 
