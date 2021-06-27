@@ -23,6 +23,9 @@ $ echo -n d | nc    -W 1 localhost 8123
 Note that "-static" compilation does seem to speed things up by roughly 8 - 15us (microseconds).  The binary is on the order 
 of 800K rather than 17K, though.
 
+echo -n d | nc    -6 -W 1 localhost 8123
+echo -n d | nc -u -6  -W 1 localhost 8123
+
 ***************
 build / release methodology:
 

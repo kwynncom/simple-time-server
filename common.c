@@ -8,21 +8,23 @@
     
 #include "config.h"
     
-int getBoundSock(int isTCP, char *outaddr) {
+int getBoundSock(int isTCP) {
     struct sockaddr_in6 saddr;
-    int sock, type, prot;
-    int isoutaddr = strcmp("", outaddr);
+    int sock, type, prot = 0;
 
-    if (!isTCP) { type = SOCK_DGRAM ; prot = 17; }
-    else        { type = SOCK_STREAM; prot =  6; }
+    if (!isTCP) { type = SOCK_DGRAM ; 
+					prot = 17; 
+}
+    else        { type = SOCK_STREAM; 
+					// prot =  6; 
+			}
 
     bzero(&saddr, sizeof(saddr));
-    saddr.sin6_family = AF_INET; 
-    // if (!isoutaddr) saddr.sin6_addr.s_addr = in6addr_any; // htonl(INADDR_ANY);
-    // else          saddr.sin6_addr.s_addr = inet_addr(outaddr); 
+    saddr.sin6_family = AF_INET6; 
+	saddr.sin6_addr = in6addr_any; // htonl(INADDR_ANY);
     saddr.sin6_port = htons(KW_STS_PORT);
 
-    if ((sock = socket(AF_INET, type, prot)) < 0) { perror("socket creation failed"); exit(EXIT_FAILURE); }
+    if ((sock = socket(AF_INET6, type, prot)) < 0) { perror("socket creation failed"); exit(EXIT_FAILURE); }
 
     if (!isTCP) {
         struct timeval timeout;      
@@ -32,11 +34,9 @@ int getBoundSock(int isTCP, char *outaddr) {
         if (setsockopt (sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) perror("setsockopt failed\n");
     }
     
-    if (!isoutaddr) {
-	if (bind(sock, (const struct sockaddr *)&saddr, sizeof(saddr)) < 0) { perror("bind failed"); exit(EXIT_FAILURE); }
+	if (bind(sock, (struct sockaddr *) &saddr, sizeof(saddr)) < 0) { perror("bind failed"); exit(EXIT_FAILURE); }
 	if (isTCP) if ((listen(sock, TCP_CONN_BACKLOG)) != 0) { printf("Listen failed...\n"); exit(EXIT_FAILURE);  } 
-    } else  if (connect(sock, (struct sockaddr *) &saddr, sizeof(saddr)) != 0) {  printf("connection with the server failed...\n"); exit(EXIT_FAILURE); } 
-        
+    
     return sock;
 }
 

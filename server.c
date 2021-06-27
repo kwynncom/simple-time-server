@@ -76,8 +76,8 @@ void sts_server(void) {
 
     int isTCP = !strcmp(prots, "tcp");
 
-    int sock = getBoundSock(isTCP, "");
-    struct sockaddr_in caddr; // only UDP uses
+    int sock = getBoundSock(isTCP);
+    struct sockaddr_in6  caddr; // only UDP uses
     int caddrsz = sizeof(caddr); // same
     char inbuf[3];
     int inbufsz = sizeof(inbuf);
