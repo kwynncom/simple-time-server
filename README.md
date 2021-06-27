@@ -4,7 +4,8 @@ output nanosecond time quickly and simply
 The following test uses other-than the 'r' / raw option.  Any input other than r printf()s the time as a string.  The r option 
 outputs it as a raw long integer--a little endian 8 byte unsigned integer on the current kwynn.com and other x86_64 machines.
 
-A bit more detail below.  Now live on kwynn.com.  I enabled IPv6, but there appears to be a delay, so it doesn't work yet
+A bit more detail below.  Now live on kwynn.com.  I am not sure why IPv6 isn't working.  It may be an AWS delay, or it may be 
+within the code.  These work with -4 (IPv4) qualifier, as shown further below:
 
 echo -n d | nc -u -W 1 -4 kwynn.com 8123
 echo -n d | nc    -W 1 -4 kwynn.com 8123
