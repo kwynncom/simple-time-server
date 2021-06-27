@@ -1,3 +1,6 @@
+systemctl enable simptime
+
+*******
 reference to previous .service:
 https://github.com/kwynncom/code-fragments/blob/master/mid/kwboot.service
 

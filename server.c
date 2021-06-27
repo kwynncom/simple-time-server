@@ -8,18 +8,6 @@
 #include "config.h"
 #include "common.h"
 
-void checkUID() {
-
-	const int fsc = 3;
-	__uid_t (*fs[/* 3 - cannot init me */])() = {&getuid, &geteuid, &getgid};
-
-	for(int i=0; i < fsc; i++) 
-		if (fs[i]() != NOBODY_NOGROUP_ID) { 
-			printf("I am somebody but I should not be somebody.\n"); 
-			exit(8126); 
-		}
-}
-
 void sts_final_loop_tcp(int cfd) {
 
 	const int     obsz = KW_STS_TIME_MAX_BUF_SZ;
@@ -51,6 +39,8 @@ void sts_final_loop_udp(int sock, const struct sockaddr_in addr) {
 	const int tsz = sizeof(t);
 	int addrsz = sizeof(addr);
 
+	if (tsz != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8126); }
+
 	while(1) {
 		recvfrom(sock, &ib, 1, 0 /* flags */, ( struct sockaddr *) &addr, &addrsz); 
 		t = nanotime();
@@ -61,6 +51,18 @@ void sts_final_loop_udp(int sock, const struct sockaddr_in addr) {
 		}         
 	}
 
+}
+
+void checkUID() {
+
+	const int fsc = 3;
+	__uid_t (*fs[/* 3 - cannot init me */])() = {&getuid, &geteuid, &getgid};
+
+	for(int i=0; i < fsc; i++) 
+		if (fs[i]() != NOBODY_NOGROUP_ID) { 
+			printf("I am somebody but I should not be somebody.\n"); 
+			exit(8126); 
+		}
 }
 
 void sts_server(void) {
