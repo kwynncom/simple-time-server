@@ -10,6 +10,16 @@
 #include "config.h"
 #include "common.h"
 
+void checkUID() {
+
+	const int fsc = 3;
+	__uid_t (*fs[/* 3 - cannot init me */])() = {&getuid, &geteuid, &getgid};
+
+	for(int i=0; i < fsc; i++) if (fs[i]() != NOBODY_NOGROUP_ID) { printf("I am somebody but I should not be somebody.\n"); exit(8126); };
+
+// getuid(), geteuid(), getgid()
+}
+
 void sts_final_loop_tcp(int cfd) {
 
 	const int     obsz = KW_STS_TIME_MAX_BUF_SZ;
@@ -74,6 +84,8 @@ void sts_server(void) {
     int sizet = sizeof(t);
  
 	if (sizet != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8126); }
+
+	checkUID();
 
     if (isTCP) {
         while(1) {

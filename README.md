@@ -2,7 +2,7 @@
 output nanosecond time quickly and simply
 
 The following test uses other-than the 'r' / raw option.  Any input other than r printf()s the time as a string.  The r option 
-outputs it as a raw long integer--a little endian 8 byte integer on the current kwynn.com and other x86_64 machines.
+outputs it as a raw long integer--a little endian 8 byte unsigned integer on the current kwynn.com and other x86_64 machines.
 
 With the server running:
 
