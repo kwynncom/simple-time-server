@@ -30,7 +30,7 @@ void sts_final_loop_tcp(int cfd) {
 	}
 }
 
-void sts_final_loop_udp(int sock, const struct sockaddr_in addr) {
+void sts_final_loop_udp(int sock, const struct sockaddr_in6 addr) {
 
 	const int     obsz = KW_STS_TIME_MAX_BUF_SZ;
 	unsigned char ob[obsz];
