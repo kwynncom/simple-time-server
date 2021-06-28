@@ -3,6 +3,15 @@ output nanosecond time quickly and simply
 
 USAGE
 
+From anywhere:
+
+echo -n d | nc  -W 1 -u -6 kwynn.com 8123
+echo -n d | nc  -W 1    -6 kwynn.com 8123 
+echo -n d | nc  -W 1 -u -4 kwynn.com 8123
+echo -n d | nc  -W 1    -4 kwynn.com 8123
+
+Locally:
+
 1. make and start server:
 
 make server
