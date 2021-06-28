@@ -7,18 +7,27 @@
 
 #include "config.h"
 #include "common.h"
+#include "utils.h"
 
+void sts_server(void);
+void sts_loop_10(int sock, int isTCP);
 void sts_loop_20(int chfd, int isTCP, int parfd);
+
+void main(void) { sts_server(); }
+
+void sts_server(void) {
+ 	nobodyOrDie(); // do this before the fork
+    int fpid  = fork();
+	int isTCP = fpid;
+    int sock = getBoundSock(isTCP);
+	sts_loop_10(sock, isTCP);
+} 
 
 void sts_loop_10(int sock, int isTCP) {
 
-	if (!isTCP) {
-		sts_loop_20(sock, isTCP, sock);
-		return;
-	}
+	if (!isTCP) { sts_loop_20(sock, isTCP, sock); return; }
 
 	int tcpfd;
-
 	while (1) {
 		tcpfd = accept(sock, NULL, NULL);
 		if (tcpfd < 0) { perror("server acccept failed...\n"); exit(8130);   }
@@ -33,7 +42,7 @@ void sts_loop_20(int chfd, int isTCP, int parfd) { // only purpose of parfd is i
 	unsigned char ob[obsz];
 	unsigned char ib;
 	const int     ibsz = 1;
-	unsigned long		   t;
+	uint64_t		       t;
 	const int tsz = sizeof(t);
 
     struct sockaddr_in6  addr;
@@ -44,65 +53,21 @@ void sts_loop_20(int chfd, int isTCP, int parfd) { // only purpose of parfd is i
 	void *obsw;
 	int   obswsz;
 
-	if (tsz != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8126); }
-
 	while (1) {
 
-		bzero(ob, obsz);
+		bzero(ob, obsz); // I am nearly certain that this is necessary or weird things happen in telnet.
 
 		rr = recvfrom(chfd, &ib, ibsz, 0, ( struct sockaddr *) &addr, &addrsz);  // 4th arg is flags
 
-		if (rr != ibsz) {
-			if (isTCP) {
-				close( chfd);
-				close(parfd);
-				exit(0);
-			}
-			printf("recvfrom error.  Exiting...");
-			exit(8128);
-		}
+		if (rr != ibsz) sts_exit(isTCP, chfd, parfd, "recvfrom error - exiting...");
 
 		t = nanotime();
 
-		if (ib == 'r') { obsw = &t; obswsz = tsz; }
-		else           {
-			sprintf(ob, "%ld\n", t);
-			obsw   = ob;
-			obswsz = obsz;
-		}
+		if (ib == 'r') { obsw = &t; obswsz = tsz ;							  }
+		else           { obsw = ob; obswsz = obsz;   sprintf(ob, "%ld\n", t); }
 
 		sendto(chfd, obsw, obswsz, 0, (const struct sockaddr *) &addr, addrsz);
 	} 
 }
 
-void checkUID() {
 
-	const int fsc = 3;
-	__uid_t (*fs[/* 3 - cannot init me */])() = {&getuid, &geteuid, &getgid};
-
-	for(int i=0; i < fsc; i++) 
-		if (fs[i]() != NOBODY_NOGROUP_ID) { 
-			printf("I am somebody but I should not be somebody.\n"); 
-			exit(8126); 
-		}
-}
-
-void sts_server(void) {
-
- 	checkUID(); // do this before the fork
-
-    int fpid  = fork();
-    char *prots;
-    if (fpid) prots = "tcp";
-    else      prots = "udp";
-
-    int isTCP = !strcmp(prots, "tcp");
-
-    int sock = getBoundSock(isTCP);
-	sts_loop_10(sock, isTCP);
-
-} 
-
-void main(void) {
-	sts_server();
-}

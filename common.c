@@ -27,7 +27,7 @@ int getBoundSock(int isTCP) {
     return sock;
 }
 
-long nanotime() {
+uint64_t nanotime() {
     struct timespec sts;
     if (clock_gettime(CLOCK_REALTIME, &sts) != 0) return 0;
     return sts.tv_sec * 1000000000 + sts.tv_nsec;

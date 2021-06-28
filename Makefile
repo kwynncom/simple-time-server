@@ -1,8 +1,8 @@
-serverdebug : server.c common.c
-	gcc -g server.c common.c -o serverdebug.bin
+serverdebug : server.c common.c utils.c
+	gcc -g server.c common.c utils.c -o serverdebug.bin
 
-server : server.c common.c
-	gcc -O3 -static server.c common.c -o simptime
+server : server.c common.c utils.c
+	gcc -O3 -static server.c common.c utils.c -o simptime
 
 client : client.c common.c
 	gcc -O3 -static client.c common.c -o client.bin
