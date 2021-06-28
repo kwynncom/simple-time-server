@@ -8,7 +8,26 @@
 #include "config.h"
 #include "common.h"
 
-void sts_final_loop(int sock, int isTCP) {
+void sts_loop_20(int chfd, int isTCP, int parfd);
+
+void sts_loop_10(int sock, int isTCP) {
+
+	if (!isTCP) {
+		sts_loop_20(sock, isTCP, sock);
+		return;
+	}
+
+	int tcpfd;
+
+	while (1) {
+		tcpfd = accept(sock, NULL, NULL);
+		if (tcpfd < 0) { perror("server acccept failed...\n"); exit(8130);   }
+		if (fork()) close(tcpfd);
+		else  sts_loop_20(tcpfd, isTCP, sock);
+	}
+}
+
+void sts_loop_20(int chfd, int isTCP, int parfd) { // only purpose of parfd is if we want to close
 
 	const    int     obsz = KW_STS_TIME_MAX_BUF_SZ;
 	unsigned char ob[obsz];
@@ -20,32 +39,31 @@ void sts_final_loop(int sock, int isTCP) {
     struct sockaddr_in6  addr;
 	int addrsz =  sizeof(addr);
 
-	int connfd, tempconn, rr;
+	int rr;
 
 	void *obsw;
 	int   obswsz;
 
 	if (tsz != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8126); }
 
-	while(1) {
+	while (1) {
 
-		tempconn = sock;
+		bzero(ob, obsz);
 
-		if (isTCP) {
-			connfd = accept(sock, (struct sockaddr  *)&addr, &addrsz);
-			if (connfd < 0) { perror("server acccept failed...\n"); exit(8130);   }
-			tempconn = connfd;
-		}
-		
-		rr = recvfrom(tempconn, &ib, ibsz, 0, ( struct sockaddr *) &addr, &addrsz);  // 4th arg is flags
+		rr = recvfrom(chfd, &ib, ibsz, 0, ( struct sockaddr *) &addr, &addrsz);  // 4th arg is flags
 
 		if (rr != ibsz) {
+			if (isTCP) {
+				close( chfd);
+				close(parfd);
+				exit(0);
+			}
 			printf("recvfrom error.  Exiting...");
 			exit(8128);
 		}
-		
+
 		t = nanotime();
-		
+
 		if (ib == 'r') { obsw = &t; obswsz = tsz; }
 		else           {
 			sprintf(ob, "%ld\n", t);
@@ -53,11 +71,8 @@ void sts_final_loop(int sock, int isTCP) {
 			obswsz = obsz;
 		}
 
-		sendto(tempconn, obsw, obswsz, 0, (const struct sockaddr *) &addr, addrsz); 
-
-		if (isTCP) close(tempconn);
-	}
-
+		sendto(chfd, obsw, obswsz, 0, (const struct sockaddr *) &addr, addrsz);
+	} 
 }
 
 void checkUID() {
@@ -84,7 +99,7 @@ void sts_server(void) {
     int isTCP = !strcmp(prots, "tcp");
 
     int sock = getBoundSock(isTCP);
-	sts_final_loop(sock, isTCP);
+	sts_loop_10(sock, isTCP);
 
 } 
 
