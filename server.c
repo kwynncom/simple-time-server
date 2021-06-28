@@ -8,73 +8,54 @@
 #include "config.h"
 #include "common.h"
 
-void sts_final_loop_tcp(int cfd) {
-
-	const int     obsz = KW_STS_TIME_MAX_BUF_SZ;
-	unsigned char ob[obsz];
-	unsigned char ib;
-	unsigned long t;
-	const int tsz = sizeof(t);
-	int wr;
-	const int rcsz = 1;
-
-	if (tsz != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8125); }
-
-	while (1) {
-		if (read(cfd, &ib, rcsz) != rcsz) {
-			perror("read error.  Exiting...");
-			exit(8128);
-		}
-		t = nanotime();
-		if (ib == 'r') wr = write(cfd, &t, tsz); 
-		else {
-			sprintf(ob, "%ld\n", t);
-			wr = write(cfd, ob, obsz);
-		}
-	}
-}
-
 void sts_final_loop(int sock, int isTCP) {
 
-	const int     obsz = KW_STS_TIME_MAX_BUF_SZ;
+	const    int     obsz = KW_STS_TIME_MAX_BUF_SZ;
 	unsigned char ob[obsz];
 	unsigned char ib;
-	unsigned long t;
+	const int     ibsz = 1;
+	unsigned long		   t;
 	const int tsz = sizeof(t);
 
     struct sockaddr_in6  addr;
-	int addrsz = sizeof(addr);
-	const int rcsz = 1;
-	int connfd;
-	int tempsock;
-	int rr;
+	int addrsz =  sizeof(addr);
+
+	int connfd, tempconn, rr;
+
+	void *obsw;
+	int   obswsz;
 
 	if (tsz != 8) { printf("long is not 8 bytes - might lead to buffer overflow"); exit(8126); }
 
 	while(1) {
 
-		tempsock = sock;
+		tempconn = sock;
 
 		if (isTCP) {
 			connfd = accept(sock, (struct sockaddr  *)&addr, &addrsz);
-			if (connfd < 0) { printf("server acccept failed...\n"); exit(1);   }
-			tempsock = connfd;
+			if (connfd < 0) { perror("server acccept failed...\n"); exit(8130);   }
+			tempconn = connfd;
 		}
 		
-		rr = recvfrom(tempsock, &ib, rcsz, 0 /* flags */, ( struct sockaddr *) &addr, &addrsz); 
+		rr = recvfrom(tempconn, &ib, ibsz, 0, ( struct sockaddr *) &addr, &addrsz);  // 4th arg is flags
 
-		if (rr != rcsz) {
+		if (rr != ibsz) {
 			printf("recvfrom error.  Exiting...");
 			exit(8128);
 		}
+		
 		t = nanotime();
-		if (ib == 'r') sendto(tempsock, &t, tsz, 0, (const struct sockaddr *) &addr, addrsz); 
-		else {
+		
+		if (ib == 'r') { obsw = &t; obswsz = tsz; }
+		else           {
 			sprintf(ob, "%ld\n", t);
-			sendto(tempsock, ob, obsz, 0, (const struct sockaddr *) &addr, addrsz); 
-		}     
+			obsw   = ob;
+			obswsz = obsz;
+		}
 
-		if (isTCP) close(tempsock);
+		sendto(tempconn, obsw, obswsz, 0, (const struct sockaddr *) &addr, addrsz); 
+
+		if (isTCP) close(tempconn);
 	}
 
 }
@@ -93,7 +74,7 @@ void checkUID() {
 
 void sts_server(void) {
 
-// 	checkUID(); // do this before the fork
+ 	checkUID(); // do this before the fork
 
     int fpid  = fork();
     char *prots;
