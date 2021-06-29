@@ -1,7 +1,8 @@
 # simple-time-server
 output nanosecond time quickly and simply
 
-USAGE
+USAGE - The following contains lots of newlines which do not show up by default on the web even when I use the 
+SatanSoft end-of-line format.  Click the "raw" (view) option to see this with the newlines.  Or download / clone it.
 
 From anywhere:
 
