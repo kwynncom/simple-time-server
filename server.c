@@ -33,7 +33,7 @@ void sts_loop_10(int sock, int isTCP) {
 		tcpfd = accept(sock, NULL, NULL);
 		if (tcpfd < 0) { perror("server acccept failed...\n"); exit(8130);   }
 		if (fork()) {
-			signal(SIGCHLD, SIG_IGN); // prevent zombies.  See notes below. 
+			signal(SIGCHLD, SIG_IGN); // prevent zombies - ignore the return / exit value of the child process
 			close(tcpfd);
 		}
 		else  sts_loop_20(tcpfd, isTCP, sock);
@@ -73,8 +73,3 @@ void sts_loop_20(int chfd, int isTCP, int parfd) { // only purpose of parfd is i
 		sendto(chfd, obsw, obswsz, 0, (const struct sockaddr *) &addr, addrsz);
 	} 
 }
-
-// ID zombies with 
-// ps -elf | grep Z
-// test for zombies with 
-// echo -n d | nc  -W 1    -4 localhost 8123
