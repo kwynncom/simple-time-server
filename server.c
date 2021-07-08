@@ -4,6 +4,7 @@
 #include <arpa/inet.h> 
 #include <stdlib.h> // exit
 #include <string.h> // strcmp
+#include<sys/wait.h> // SIGCHLD
 
 #include "config.h"
 #include "common.h"
@@ -31,7 +32,10 @@ void sts_loop_10(int sock, int isTCP) {
 	while (1) {
 		tcpfd = accept(sock, NULL, NULL);
 		if (tcpfd < 0) { perror("server acccept failed...\n"); exit(8130);   }
-		if (fork()) close(tcpfd);
+		if (fork()) {
+			signal(SIGCHLD, SIG_IGN); // prevent zombies.  See notes below. 
+			close(tcpfd);
+		}
 		else  sts_loop_20(tcpfd, isTCP, sock);
 	}
 }
@@ -70,4 +74,7 @@ void sts_loop_20(int chfd, int isTCP, int parfd) { // only purpose of parfd is i
 	} 
 }
 
-
+// ID zombies with 
+// ps -elf | grep Z
+// test for zombies with 
+// echo -n d | nc  -W 1    -4 localhost 8123

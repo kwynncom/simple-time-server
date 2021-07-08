@@ -1,0 +1,11 @@
+Fixed a few minutes later.
+
+As of July 8, 2021, this is creating a bunch of zombie processes.  I have to admit that I barely know what such a thing is, but I'd better 
+look into it.
+
+ID'ing a zombie:
+
+ps -elf | grep Z
+
+test for zombies with 
+echo -n d | nc  -W 1    -4 localhost 8123
