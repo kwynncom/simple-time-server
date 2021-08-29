@@ -21,10 +21,7 @@ int getBoundSock(int isTCP, char *myinaddr) {
 
 	if (!isinaddr) saddr.sin6_addr = in6addr_any;
 
-// 	if  (inet_pton(AF_INET6, addrStr , &addro.sin6_addr) != 1) { fprintf(stderr, "bad IP address\n"); exit(EXIT_FAILURE); }
 	else if (inet_pton(AF_INET6, myinaddr, &saddr.sin6_addr) != 1)  { fprintf(stderr, "bad IP address\n"); exit(EXIT_FAILURE); }
-//	else           saddr.sin6_addr = inet_addr(myinaddr);
-
     saddr.sin6_port = htons(KW_STS_PORT);
 
     if ((sock = socket(AF_INET6, sockType, 0)) < 0) { perror("socket creation failed"); exit(EXIT_FAILURE); }
@@ -43,7 +40,7 @@ uint64_t nanotime() {
     return sts.tv_sec * 1000000000 + sts.tv_nsec;
 }
 
-char *getAddr(int argc, char **argv) { // 2021/08/28 11:50pm
+char *getAddr(int argc, char **argv) {  // almost exactly from https://github.com/kwynncom/sntp-client/blob/149dc4058d50db0f729f6fd3a433fd94a5ad8089/utils.c
 
 	int argl;
 	char *arg;
