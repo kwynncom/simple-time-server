@@ -11,15 +11,15 @@
 
 #define INBUFMAX KW_STS_TIME_MAX_BUF_SZ
 
-void doit();
+void doit(int argc, char **argv);
 
-int main()
-{ 
-    doit();
+void main(int argc, char **argv) { 
+    doit(argc, argv);
 }
 
-void doit() {
-    int sock = getBoundSock(0, "127.0.0.1");
+void doit(int argc, char **argv) {
+
+    int sock = getBoundSock(0, getAddr(argc, argv));
 
     const char smsg = 'r';
     int readr, writer;

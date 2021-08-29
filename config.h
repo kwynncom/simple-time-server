@@ -1,3 +1,5 @@
 #define KW_STS_PORT 8123
 #define TCP_CONN_BACKLOG 20
 #define NOBODY_NOGROUP_ID 65534
+
+#define KW_STS_DEFAULT_SERVER_IP4  "34.193.238.16" // kwynn.com as of 2021/08/28
