@@ -14,27 +14,40 @@ The following contains important newlines that do not show well on the web.  Try
 
 https://raw.githubusercontent.com/kwynncom/simple-time-server/main/README.md
 
+I'm adding extra newlines to try to make this look right by default in GitHub:
+
 From anywhere:
 
 telnet kwynn.com 8123
+
 Trying 2600:1f18:23ab:9500:acc1:69c5:2674:8c03...
+
 Connected to kwynn.com.
+
 Escape character is '^]'.
+
 d
+
 1630206989322172987
+
 1630206989322234138
+
 1630206989322236828
 
 3 timestamps show because of the newline and line feed.
 
 echo -n d | nc -u -W 1 kwynn.com 8123
+
 1630207642688411581
 
 -u below is the UDP version -4 is IPv4; -6 is IPv6.
 
 echo -n d | nc  -W 1 -u -6 kwynn.com 8123
+
 echo -n d | nc  -W 1    -6 kwynn.com 8123 
+
 echo -n d | nc  -W 1 -u -4 kwynn.com 8123
+
 echo -n d | nc  -W 1    -4 kwynn.com 8123
 
 Locally:
