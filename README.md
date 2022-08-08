@@ -1,6 +1,8 @@
 # simple-time-server
 output nanosecond time quickly and simply
 
+https://kwynn.com/t/22/08/tsck/ - live demo
+
 USAGE
 
 Make a UDP or TCP connection and enter / send any character.  Any character other than 'r' gives the decimal / string representation of the time as 
