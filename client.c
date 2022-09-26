@@ -19,29 +19,28 @@ int main()
 }
 
 void doit() {
-    int sock = getBoundSock(0, "127.0.0.1");
+    int sock = getBoundSock(0, "::1"); // for IPv4 addresses, need to convert to IPv6 like I did in my SNTP client
 
-    const char smsg = 'r';
+    const char smsg = 'a';
     const int  smsgsize = sizeof(smsg);
     int readr, writer;
     long b, e, timer;
+	int tsz = sizeof(timer);
     timer = 0;
     char inbuf[INBUFMAX];
-    char *outfmt;
+    // const char *outfmt = "%ld\n%s%ld\n";
+	const char *outfmt = "%s";
 
-    if (smsg == 'd') outfmt = "%ld\n%s%ld\n";
-    else             outfmt = "%ld\n%ld\n\%ld\n";
-
-    for (int i=0; i < 20; i++) {
+    for (int i=0; i < 1000000; i++) {
         bzero(inbuf, INBUFMAX); 
-        b = nanotime();
+        // b = nanotime();
         writer = write(sock, &smsg, smsgsize);
-        if (smsg == 'r') readr = read(sock, &timer, sizeof(timer));
+        if (smsg == 'r') readr = read(sock, &timer, tsz);
         else             readr = read(sock, inbuf, INBUFMAX);
-        e = nanotime();
+        // e = nanotime();
         if (smsg == 'r') 
-             printf(outfmt, b, timer, e);
-        else printf(outfmt, b, inbuf, e);
+             fwrite(&timer, tsz, 1, stdout); // just server time
+        else printf(outfmt, inbuf);
     } 
 
     close(sock); 
