@@ -20,7 +20,7 @@ void sts_server(void) {
  	nobodyOrDie(); // do this before the fork
     int fpid  = fork();
 	int isTCP = fpid;
-    int sock = getBoundSock(isTCP);
+    int sock = getBoundSock(isTCP, "");
 	sts_loop_10(sock, isTCP);
 } 
 
